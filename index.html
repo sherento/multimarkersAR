@@ -1,174 +1,180 @@
+
 <!DOCTYPE html>
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <!-- three.js library -->
-<script src='js/three.min.js'></script>
-<!-- ar.js -->
-<script src="js/ar.js"></script>
-
+<script src='three.js'></script>
+<!-- jsartookit -->
 <script src="js/artoolkit.min.js"></script>
 <script src="js/artoolkit.api.js"></script>
-
+<!-- include threex.artoolkit -->
 <script src="js/threex-artoolkitsource.js"></script>
 <script src="js/threex-artoolkitcontext.js"></script>
 <script src="js/threex-arbasecontrols.js"></script>
 <script src="js/threex-armarkercontrols.js"></script>
-
 <script>THREEx.ArToolkitContext.baseURL = '../'</script>
 
 <body style='margin : 0px; overflow: hidden; font-family: Monospace;'>
 	<div style='position: absolute; top: 10px; width:100%; text-align: center; z-index: 1;'>
 
 	</div>
-	<script>
+<script>
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Init
 	//////////////////////////////////////////////////////////////////////////////////
 
 	// init renderer
-		var renderer	= new THREE.WebGLRenderer({
-			antialias: true,
-			alpha: true
-		});
-		renderer.setClearColor(new THREE.Color('lightgrey'), 0)
-		renderer.setSize( 640, 480 );
-		renderer.domElement.style.position = 'absolute'
-		renderer.domElement.style.top = '0px'
-		renderer.domElement.style.left = '0px'
-		document.body.appendChild( renderer.domElement );
+	var renderer	= new THREE.WebGLRenderer({
+		antialias	: true,
+		alpha: true
+	});
+	renderer.setClearColor(new THREE.Color('lightgrey'), 0)
+	renderer.setSize( 640, 480 );
+	renderer.domElement.style.position = 'absolute'
+	renderer.domElement.style.top = '0px'
+	renderer.domElement.style.left = '0px'
+	document.body.appendChild( renderer.domElement );
 
 	// array of functions for the rendering loop
-		var onRenderFcts= [];
+	var onRenderFcts= [];
 
 	// init scene and camera
-		var scene	= new THREE.Scene();
+	var scene	= new THREE.Scene();
 
 	//////////////////////////////////////////////////////////////////////////////////
 	//		Initialize a basic camera
 	//////////////////////////////////////////////////////////////////////////////////
 
 	// Create a camera
-		var camera = new THREE.Camera();
-		scene.add(camera);
+	var camera = new THREE.Camera();
+	scene.add(camera);
 
 	////////////////////////////////////////////////////////////////////////////////
 	//          handle arToolkitSource
 	////////////////////////////////////////////////////////////////////////////////
 
-		var arToolkitSource = new THREEx.ArToolkitSource({
+	var arToolkitSource = new THREEx.ArToolkitSource({
 		// to read from the webcam
 		sourceType : 'webcam',
 
-		})
+		// to read from an image
+		// sourceType : 'image',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/images/img.jpg',
 
-		arToolkitSource.init(function onReady(){
-			onResize()
-		})
+		// to read from a video
+		// sourceType : 'video',
+		// sourceUrl : THREEx.ArToolkitContext.baseURL + '../data/videos/headtracking.mp4',
+	})
+
+	arToolkitSource.init(function onReady(){
+		onResize()
+	})
 
 	// handle resize
-		window.addEventListener('resize', function(){
-			onResize()
-		})
-
-		function onResize(){
-			arToolkitSource.onResize()
-			arToolkitSource.copySizeTo(renderer.domElement)
-			if( arToolkitContext.arController !== null ){
-				arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
-			}
+	window.addEventListener('resize', function(){
+		onResize()
+	})
+	function onResize(){
+		arToolkitSource.onResize()
+		arToolkitSource.copySizeTo(renderer.domElement)
+		if( arToolkitContext.arController !== null ){
+			arToolkitSource.copySizeTo(arToolkitContext.arController.canvas)
 		}
+	}
 	////////////////////////////////////////////////////////////////////////////////
 	//          initialize arToolkitContext
 	////////////////////////////////////////////////////////////////////////////////
 
-
 	// create atToolkitContext
-		var arToolkitContext = new THREEx.ArToolkitContext({
-			cameraParametersUrl: 'image/camera_para.dat',
-			detectionMode: 'mono',
-		})
+	var arToolkitContext = new THREEx.ArToolkitContext({
+		cameraParametersUrl: THREEx.ArToolkitContext.baseURL + 'image/camera_para.dat',
+		detectionMode: 'mono',
+	})
 	// initialize it
-		arToolkitContext.init(function onCompleted(){
+	arToolkitContext.init(function onCompleted(){
 		// copy projection matrix to camera
-			camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
-		})
+		camera.projectionMatrix.copy( arToolkitContext.getProjectionMatrix() );
+	})
 
 	// update artoolkit on every frame
-		onRenderFcts.push(function(){
-			if( arToolkitSource.ready === false )	return
+	onRenderFcts.push(function(){
+		if( arToolkitSource.ready === false )	return
 
-			arToolkitContext.update( arToolkitSource.domElement )
+		arToolkitContext.update( arToolkitSource.domElement )
+	})
 
-		// update scene.visible if the marker is seen
-			scene.visible = camera.visible
-		})
+// ;(function(){
 
-	////////////////////////////////////////////////////////////////////////////////
-	//          Create a ArMarkerControls
-	////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
+	//		markerRoot1
+	//////////////////////////////////////////////////////////////////////////////
 
-	// init controls for camera
-		var markerControls = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-			type : 'pattern',
-			patternUrl : 'image/pattern-letterA.patt',
-			// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.kanji',
-			// as we controls the camera, set changeMatrixMode: 'cameraTransformMatrix'
-			changeMatrixMode: 'cameraTransformMatrix'
-		})
+	// build markerControls
+	var markerRoot1 = new THREE.Group
+	markerRoot1.name = 'marker1'
+	scene.add(markerRoot1)
+	var markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot1, {
+		type : 'pattern',
+		patternUrl : THREEx.ArToolkitContext.baseURL + 'image/pattern-letterA.patt',
+		// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.kanji',
+	})
 
-		var markerControls2 = new THREEx.ArMarkerControls(arToolkitContext, camera, {
-			type : 'pattern',
-			patternUrl : 'image/pattern-letterB.patt',
-			// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.kanji',
-			// as we controls the camera, set changeMatrixMode: 'cameraTransformMatrix'
-			changeMatrixMode: 'cameraTransformMatrix'
-		})
+	// add a gizmo in the center of the marker
+	var geometry	= new THREE.CubeGeometry( 0.1, 0.1, 0.1 )
+	var material	= new THREE.MeshNormalMaterial({
+		wireframe: true
+	});
+	var mesh	= new THREE.Mesh( geometry, material );
+	markerRoot1.add( mesh );
 
-	// as we do changeMatrixMode: 'cameraTransformMatrix', start with invisible scene
-		scene.visible = false
+	//////////////////////////////////////////////////////////////////////////////
+	//		markerRoot2
+	//////////////////////////////////////////////////////////////////////////////
 
-	//////////////////////////////////////////////////////////////////////////////////
-	//		add an object in the scene
-	//////////////////////////////////////////////////////////////////////////////////
+	// build markerControls
+	var markerRoot2 = new THREE.Group
+	markerRoot2.name = 'marker2'
+	scene.add(markerRoot2)
+	var markerControls = new THREEx.ArMarkerControls(arToolkitContext, markerRoot2, {
+		type : 'pattern',
+		// patternUrl : THREEx.ArToolkitContext.baseURL + '../data/data/patt.hiro',
+		patternUrl : THREEx.ArToolkitContext.baseURL + 'image/pattern-letterB.patt',
+	})
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-		// var map = new THREE.TextureLoader().load( "image/subtlejohn.png" );
-		// var material = new THREE.SpriteMaterial( { map: map, color: 0xffffff, fog: true } );
-		// var sprite = new THREE.Sprite( material );
-		// scene.add( sprite );
+	// add a gizmo in the center of the marker
+	var geometry	= new THREE.SphereGeometry( 0.3, 20, 20 )
+	var material	= new THREE.MeshNormalMaterial({
+		wireframe: true
+	});
+	var mesh	= new THREE.Mesh( geometry, material );
+	markerRoot2.add( mesh );
+// })()
 
-		var geometry = new THREE.SphereGeometry( 0.5, 20, 20 );
-		var material = new THREE.MeshBasicMaterial( {color: 0xff00ff} );
-		var sphere = new THREE.Mesh( geometry, material );
-		scene.add( sphere );
+// ;(function(){
+	var markerRoot1 = scene.getObjectByName('marker1')
+	var markerRoot2 = scene.getObjectByName('marker2')
 
-		var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-		var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-		var cube = new THREE.Mesh( geometry, material );
-		scene.add( cube );
-
-
-	//////////////////////////////////////////////////////////////////////////////////
-	//		render the whole thing on the page
-	//////////////////////////////////////////////////////////////////////////////////
+	var container = new THREE.Group
+	scene.add(container)
 
 	// render the scene
-		onRenderFcts.push(function(){
-			renderer.render( scene, camera );
-		})
+	onRenderFcts.push(function(){
+		renderer.render( scene, camera );
+	})
 
 	// run the rendering loop
-		var lastTimeMsec= null
-		requestAnimationFrame(function animate(nowMsec){
+	var lastTimeMsec= null
+	requestAnimationFrame(function animate(nowMsec){
 		// keep looping
-			requestAnimationFrame( animate );
+		requestAnimationFrame( animate );
 		// measure time
-			lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
-			var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
-			lastTimeMsec	= nowMsec
+		lastTimeMsec	= lastTimeMsec || nowMsec-1000/60
+		var deltaMsec	= Math.min(200, nowMsec - lastTimeMsec)
+		lastTimeMsec	= nowMsec
 		// call each update function
-			onRenderFcts.forEach(function(onRenderFct){
-				onRenderFct(deltaMsec/1000, nowMsec/1000)
-			})
+		onRenderFcts.forEach(function(onRenderFct){
+			onRenderFct(deltaMsec/1000, nowMsec/1000)
 		})
-	</script>
+	})
+</script>
+
 </body>
